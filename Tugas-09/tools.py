@@ -2,11 +2,11 @@ from manager.schedule import (
     add_schedule,
     show_schedule,
     edit_schedule,
+    toggle_selesai,
     delete_schedule
 )
 
 from manager.reminder import show_reminder
-from manager.output import show_profile
 
 def display_menu():
     # Tampilan pilihan menu (UI)
@@ -18,7 +18,7 @@ def display_menu():
     print('3. Pengingat')
     print('4. Edit Jadwal')
     print('5. Hapus Jadwal')
-    print('6. Profil')
+    print('6. Status Jadwal')
     print('7. Keluar')
     print('================================')
 
@@ -53,9 +53,8 @@ def select_menu(menu):
         delete_schedule()
 
     elif menu == '6':
-        # Logic untuk profil pengguna
-        print('Anda mengakses menu "Profil"')
-        show_profile()
+        print('Anda mengakses menu "Tandai Selesai"')
+        toggle_selesai()
 
     elif menu == '7':
         # Logic untuk keluar program
