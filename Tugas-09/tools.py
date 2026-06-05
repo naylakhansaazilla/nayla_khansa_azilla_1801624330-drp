@@ -1,174 +1,61 @@
-import sqlite3
-from manager.search import search_schedule
-from manager.output import print_schedules
-
-DB_NAME = 'cheki_cheki.db'
-
-
-def connect_db():
-    return sqlite3.connect(DB_NAME)
-
-
-def create_table():
-    connection = connect_db()
-    cursor = connection.cursor()
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS schedules (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            tanggal TEXT,
-            waktu TEXT,
-            kegiatan TEXT,
-            selesai INTEGER
-        )
-    ''')
-
-    connection.commit()
-    connection.close()
-
+from manager.output import *
 
 def display_menu():
+    # Tampilan pilihan menu (UI)
     print('================================')
-    print('Selamat datang di Cheki-Cheki')
+    print('         CHEKI-CHEKI')
+    print('================================')
     print('1. Tambah Jadwal')
-    print('2. Lihat Daftar Jadwal')
-    print('3. Checklist Jadwal')
-    print('4. Cek Pengingat')
-    print('5. Edit Jadwal')
-    print('6. Hapus Jadwal')
-    print('7. Selesai')
+    print('2. Daftar Kegiatan')
+    print('3. Pengingat')
+    print('4. Edit Jadwal')
+    print('5. Hapus Jadwal')
+    print('6. Profil')
+    print('7. Keluar')
     print('================================')
 
 
 def select_menu(menu):
+    # Seleksi menu
+
     if menu == '1':
+        # Logic untuk tambah jadwal
+        print('Anda mengakses menu "Tambah Jadwal"')
         add_schedule()
 
     elif menu == '2':
-        show_schedules()
+        # Logic untuk melihat daftar kegiatan
+        print('Anda mengakses menu "Daftar Kegiatan"')
+        print('Di menu ini Anda dapat melihat dan checklist kegiatan.')
+        show_schedule()
 
     elif menu == '3':
-        checklist_schedule()
+        # Logic untuk pengingat
+        print('Anda mengakses menu "Pengingat"')
+        show_reminder()
 
     elif menu == '4':
-        check_reminder()
-
-    elif menu == '5':
+        # Logic untuk edit jadwal
+        print('Anda mengakses menu "Edit Jadwal"')
         edit_schedule()
 
-    elif menu == '6':
+    elif menu == '5':
+        # Logic untuk hapus jadwal
+        print('Anda mengakses menu "Hapus Jadwal"')
         delete_schedule()
 
+    elif menu == '6':
+        # Logic untuk profil pengguna
+        print('Anda mengakses menu "Profil"')
+        show_profile()
+
     elif menu == '7':
-        print('Keluar dari program Cheki-Cheki')
+        # Logic untuk keluar program
+        print('Terima kasih telah menggunakan Cheki-Cheki ^^')
         return True
 
     else:
-        print('Menu tidak ada')
+        # Logic jika input tidak sesuai menu
+        print('Menu tidak tersedia')
 
     return False
-
-
-def add_schedule():
-    print('Anda mengakses menu "Tambah Jadwal"')
-
-    tanggal = input('Masukkan tanggal kegiatan: ')
-    waktu = input('Masukkan waktu kegiatan: ')
-    kegiatan = input('Masukkan nama kegiatan: ')
-
-    connection = connect_db()
-    cursor = connection.cursor()
-
-    cursor.execute('''
-        INSERT INTO schedules (tanggal, waktu, kegiatan, selesai)
-        VALUES (?, ?, ?, ?)
-    ''', (tanggal, waktu, kegiatan, 0))
-
-    connection.commit()
-    connection.close()
-
-    print('Jadwal berhasil ditambahkan.')
-
-
-def show_schedules():
-    connection = connect_db()
-    cursor = connection.cursor()
-
-    cursor.execute('SELECT * FROM schedules')
-    schedules = cursor.fetchall()
-
-    connection.close()
-
-    print_schedules(schedules)
-
-
-def checklist_schedule():
-    show_schedules()
-
-    nomor = input('Masukkan ID jadwal yang sudah selesai: ')
-
-    connection = connect_db()
-    cursor = connection.cursor()
-
-    cursor.execute('''
-        UPDATE schedules
-        SET selesai = ?
-        WHERE id = ?
-    ''', (1, nomor))
-
-    connection.commit()
-    connection.close()
-
-    print('Jadwal berhasil ditandai selesai.')
-
-
-def check_reminder():
-    waktu = input('Masukkan waktu yang ingin dicek, contoh 07.00: ')
-
-    schedules = search_schedule(waktu)
-
-    if len(schedules) == 0:
-        print('Tidak ada jadwal pada waktu tersebut.')
-    else:
-        print('Pengingat Jadwal:')
-        print_schedules(schedules)
-
-
-def edit_schedule():
-    show_schedules()
-
-    nomor = input('Masukkan ID jadwal yang ingin diedit: ')
-
-    tanggal_baru = input('Masukkan tanggal baru: ')
-    waktu_baru = input('Masukkan waktu baru: ')
-    kegiatan_baru = input('Masukkan nama kegiatan baru: ')
-
-    connection = connect_db()
-    cursor = connection.cursor()
-
-    cursor.execute('''
-        UPDATE schedules
-        SET tanggal = ?, waktu = ?, kegiatan = ?
-        WHERE id = ?
-    ''', (tanggal_baru, waktu_baru, kegiatan_baru, nomor))
-
-    connection.commit()
-    connection.close()
-
-    print('Jadwal berhasil diedit.')
-
-
-def delete_schedule():
-    show_schedules()
-
-    nomor = input('Masukkan ID jadwal yang ingin dihapus: ')
-
-    connection = connect_db()
-    cursor = connection.cursor()
-
-    cursor.execute('DELETE FROM schedules WHERE id = ?', (nomor,))
-
-    connection.commit()
-    connection.close()
-
-    print('Jadwal berhasil dihapus.')
