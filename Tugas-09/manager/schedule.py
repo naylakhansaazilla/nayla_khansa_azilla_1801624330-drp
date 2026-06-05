@@ -63,6 +63,33 @@ def edit_schedule():
 
     print('Jadwal berhasil diperbarui!')
 
+def toggle_selesai():
+    show_schedule()
+
+    id_jadwal = input('Masukkan ID yang ingin ditandai selesai: ')
+
+    connection = connect_db()
+    cursor = connection.cursor()
+
+    cursor.execute('SELECT selesai FROM schedules WHERE id=?', (id_jadwal,))
+    data = cursor.fetchone()
+
+    if data is None:
+        print("Jadwal tidak ditemukan!")
+        return
+
+    current = data[0] if data[0] is not None else 0
+    new_status = 0 if current == 1 else 1
+
+    cursor.execute(
+        'UPDATE schedules SET selesai=? WHERE id=?',
+        (new_status, id_jadwal)
+    )
+
+    connection.commit()
+    connection.close()
+
+    print("Status jadwal berhasil diupdate!")
 
 def delete_schedule():
     show_schedule()
@@ -81,3 +108,4 @@ def delete_schedule():
     connection.close()
 
     print('Jadwal berhasil dihapus!')
+
