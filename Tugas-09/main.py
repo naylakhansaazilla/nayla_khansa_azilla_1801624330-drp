@@ -10,8 +10,11 @@
 # Aplikasi pengelola jadwal harian
 
 from tools import display_menu, select_menu
+from manager.storage import create_table
 
 if __name__ == '__main__':
+
+    create_table()
     
     print('================================')
     print('Selamat datang di Cheki-Cheki ^^')
