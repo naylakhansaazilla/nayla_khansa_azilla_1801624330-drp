@@ -1,18 +1,83 @@
+from manager.storage import connect_db
+from manager.output import print_schedules
+
+
 def add_schedule():
-    print('Menambahkan jadwal baru...')
+    tanggal = input('Masukkan tanggal: ')
+    waktu = input('Masukkan waktu: ')
+    kegiatan = input('Masukkan kegiatan: ')
+
+    connection = connect_db()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        '''
+        INSERT INTO schedules
+        (tanggal, waktu, kegiatan)
+        VALUES (?, ?, ?)
+        ''',
+        (tanggal, waktu, kegiatan)
+    )
+
+    connection.commit()
+    connection.close()
+
+    print('Jadwal berhasil ditambahkan!')
 
 
 def show_schedule():
-    print('Menampilkan daftar kegiatan...')
+    connection = connect_db()
+    cursor = connection.cursor()
 
+    cursor.execute('SELECT * FROM schedules')
+    schedules = cursor.fetchall()
 
-def checklist_schedule():
-    print('Menandai kegiatan sebagai selesai...')
+    connection.close()
+
+    print_schedules(schedules)
 
 
 def edit_schedule():
-    print('Mengubah jadwal...')
+    show_schedule()
+
+    id_jadwal = input('Masukkan ID jadwal yang ingin diedit: ')
+
+    tanggal = input('Tanggal baru: ')
+    waktu = input('Waktu baru: ')
+    kegiatan = input('Kegiatan baru: ')
+
+    connection = connect_db()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        '''
+        UPDATE schedules
+        SET tanggal=?, waktu=?, kegiatan=?
+        WHERE id=?
+        ''',
+        (tanggal, waktu, kegiatan, id_jadwal)
+    )
+
+    connection.commit()
+    connection.close()
+
+    print('Jadwal berhasil diperbarui!')
 
 
 def delete_schedule():
-    print('Menghapus jadwal...')
+    show_schedule()
+
+    id_jadwal = input('Masukkan ID jadwal yang ingin dihapus: ')
+
+    connection = connect_db()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        'DELETE FROM schedules WHERE id=?',
+        (id_jadwal,)
+    )
+
+    connection.commit()
+    connection.close()
+
+    print('Jadwal berhasil dihapus!')
