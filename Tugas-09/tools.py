@@ -1,4 +1,12 @@
-from manager.output import *
+from manager.schedule import (
+    add_schedule,
+    show_schedule,
+    edit_schedule,
+    delete_schedule
+)
+
+from manager.reminder import show_reminder
+from manager.output import show_profile
 
 def display_menu():
     # Tampilan pilihan menu (UI)
