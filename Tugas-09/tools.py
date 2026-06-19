@@ -23,13 +23,13 @@ def display_menu():
     print('================================')
 
 
-def select_menu(menu):
+def select_menu(menu, id_user):
     # Seleksi menu
 
     if menu == '1':
         # Logic untuk tambah jadwal
         print('Anda mengakses menu "Tambah Jadwal"')
-        add_schedule()
+        add_schedule(id_user)
 
     elif menu == '2':
         # Logic untuk melihat daftar kegiatan
