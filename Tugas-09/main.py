@@ -20,7 +20,9 @@ if __name__ == '__main__':
     print('Selamat datang di Cheki-Cheki ^^')
     print('================================')
 
-nama = input('Silakan masukkan namamu ya!')
+    nama = input('Silakan masukkan namamu ya!')
+    
+    id_user = get_or_create_user(nama)
 
 print()
 print(f'Baik, {nama}! Selamat mengatur jadwal harianmu di Cheki-Cheki ya!')
