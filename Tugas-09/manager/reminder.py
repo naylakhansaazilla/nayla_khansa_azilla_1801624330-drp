@@ -12,13 +12,22 @@ def show_reminder():
     connection = connect_db()
     cursor = connection.cursor()
 
-    cursor.execute(
-        'SELECT * FROM schedules WHERE waktu=?',
-        (waktu,)
-    )
+    # sekarang query ke tabel reminders lalu JOIN ke schedules
+    # mengubah reminder.py menjadi entitas baru
+
+    cursor.execute('''
+        SELECT s.id, s.tanggal, s.waktu, s.kegiatan, s.deskripsi,
+               s.status, NULL, NULL
+        FROM reminders r
+        JOIN schedules s ON r.id_schedule = s.id
+        WHERE r.reminder_time = ?
+    ''', (waktu,))
 
     schedules = cursor.fetchall()
 
     connection.close()
 
-    print_schedules(schedules)
+    if len(schedules) == 0:
+        print(f'Tidak ada pengingat pada pukul {waktu}.')
+    else:
+        print_schedules(schedules)
