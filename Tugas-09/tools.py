@@ -7,6 +7,7 @@ from manager.schedule import (
 )
 
 from manager.reminder import show_reminder
+from manager.storage import export_data, import_data
 
 def display_menu():
     # Tampilan pilihan menu (UI)
@@ -53,10 +54,21 @@ def select_menu(menu, id_user):
         delete_schedule()
 
     elif menu == '6':
-        print('Anda mengakses menu "Tandai Selesai"')
+        #Logic untuk mengakses jadwal terbaru 
+        print('Anda mengakses menu "Status Jadwal"')
         toggle_selesai()
-
+        
     elif menu == '7':
+        #Logic untuk export data
+        print('Anda mengakses menu "Export Data"')
+        export_data()
+ 
+    elif menu == '8':
+        #Logic Import Data
+        print('Anda mengakses menu "Import Data"')
+        import_data()
+ 
+    elif menu == '9':
         # Logic untuk keluar program
         print('Terima kasih telah menggunakan Cheki-Cheki ^^')
         return True
