@@ -1,4 +1,7 @@
+storage:
 import sqlite3
+import json
+from datetime import datetime
 
 DB_NAME = 'cheki_cheki.db'
 
@@ -11,7 +14,7 @@ def create_table():
     connection = connect_db()
     cursor = connection.cursor()
 
-    # Tabel USER
+    # Tabel USER (baru, sesuai ERD)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users(
             id_user INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,7 +22,7 @@ def create_table():
         )
     ''')
 
-    # Menambahkan id_user, deskripsi, status
+    # Tabel SCHEDULE (ditambah id_user, deskripsi, status)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS schedules(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,7 +36,7 @@ def create_table():
         )
     ''')
 
-    # Tabel CHECKLIST 
+    # Tabel CHECKLIST (baru, sesuai ERD)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS checklist(
             id_checklist INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -44,7 +47,7 @@ def create_table():
         )
     ''')
 
-    # Tabel REMINDER
+    # Tabel REMINDER (sebelumnya cuma query ke schedules, sekarang jadi tabel sendiri sesuai ERD)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS reminders(
             id_reminder INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,3 +83,147 @@ def get_or_create_user(user_name):
 
     connection.close()
     return id_user
+
+
+def export_data():
+    """
+    TUGAS 12 - EXPORT: Mengambil seluruh data dari database
+    (users, schedules, checklist, reminders) lalu menyimpannya ke file JSON.
+    """
+    connection = connect_db()
+    cursor = connection.cursor()
+
+    cursor.execute('SELECT id_user, user_name FROM users')
+    users_rows = cursor.fetchall()
+
+    cursor.execute('SELECT id, id_user, tanggal, waktu, kegiatan, deskripsi, status FROM schedules')
+    schedules_rows = cursor.fetchall()
+
+    cursor.execute('SELECT id_checklist, id_schedule, check_status, check_date FROM checklist')
+    checklist_rows = cursor.fetchall()
+
+    cursor.execute('SELECT id_reminder, id_schedule, reminder_time, reminder_status FROM reminders')
+    reminders_rows = cursor.fetchall()
+
+    connection.close()
+
+    # Ubah hasil query (tuple) jadi list of dictionary, supaya bisa ditulis ke JSON
+    users_list = []
+    for row in users_rows:
+        users_list.append({
+            'id_user': row[0],
+            'user_name': row[1]
+        })
+
+    schedules_list = []
+    for row in schedules_rows:
+        schedules_list.append({
+            'id': row[0],
+            'id_user': row[1],
+            'tanggal': row[2],
+            'waktu': row[3],
+            'kegiatan': row[4],
+            'deskripsi': row[5],
+            'status': row[6]
+        })
+
+    checklist_list = []
+    for row in checklist_rows:
+        checklist_list.append({
+            'id_checklist': row[0],
+            'id_schedule': row[1],
+            'check_status': row[2],
+            'check_date': row[3]
+        })
+
+    reminders_list = []
+    for row in reminders_rows:
+        reminders_list.append({
+            'id_reminder': row[0],
+            'id_schedule': row[1],
+            'reminder_time': row[2],
+            'reminder_status': row[3]
+        })
+
+    data = {
+        'users': users_list,
+        'schedules': schedules_list,
+        'checklist': checklist_list,
+        'reminders': reminders_list
+    }
+
+    # Nama file dibuat OTOMATIS pakai datetime.now(), TIDAK pakai input() dari user
+    nama_file = 'export_' + datetime.now().strftime('%Y%m%d_%H%M%S') + '.json'
+
+    file = open(nama_file, 'w')
+    json.dump(data, file, indent=4)
+    file.close()
+
+    print(f'Data berhasil di-export ke file "{nama_file}"')
+
+
+def import_data():
+    """
+    TUGAS 12 - IMPORT: Membaca file JSON, lalu memasukkan
+    seluruh data di dalamnya ke database (users, schedules, checklist, reminders).
+    """
+    nama_file = input('Masukkan nama file JSON yang ingin di-import: ')
+
+    try:
+        file = open(nama_file, 'r')
+    except FileNotFoundError:
+        print(f'File "{nama_file}" tidak ditemukan!')
+        return
+
+    data = json.load(file)
+    file.close()
+
+    connection = connect_db()
+    cursor = connection.cursor()
+
+    # INSERT OR REPLACE dipakai supaya id yang sama tidak duplikat/error,
+    # tapi langsung menimpa data lama dengan data dari file JSON
+    for user in data['users']:
+        cursor.execute(
+            'INSERT OR REPLACE INTO users (id_user, user_name) VALUES (?, ?)',
+            (user['id_user'], user['user_name'])
+        )
+
+    for schedule in data['schedules']:
+        cursor.execute(
+            '''
+            INSERT OR REPLACE INTO schedules
+            (id, id_user, tanggal, waktu, kegiatan, deskripsi, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''',
+            (schedule['id'], schedule['id_user'], schedule['tanggal'],
+             schedule['waktu'], schedule['kegiatan'], schedule['deskripsi'],
+             schedule['status'])
+        )
+
+    for item in data['checklist']:
+        cursor.execute(
+            '''
+            INSERT OR REPLACE INTO checklist
+            (id_checklist, id_schedule, check_status, check_date)
+            VALUES (?, ?, ?, ?)
+            ''',
+            (item['id_checklist'], item['id_schedule'],
+             item['check_status'], item['check_date'])
+        )
+
+    for reminder in data['reminders']:
+        cursor.execute(
+            '''
+            INSERT OR REPLACE INTO reminders
+            (id_reminder, id_schedule, reminder_time, reminder_status)
+            VALUES (?, ?, ?, ?)
+            ''',
+            (reminder['id_reminder'], reminder['id_schedule'],
+             reminder['reminder_time'], reminder['reminder_status'])
+        )
+
+    connection.commit()
+    connection.close()
+
+    print(f'Data dari "{nama_file}" berhasil di-import ke database!')
