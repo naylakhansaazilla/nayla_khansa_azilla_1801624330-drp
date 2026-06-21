@@ -11,6 +11,7 @@ if __name__ == '__main__':
 
     nama = input('Silakan masukkan namamu ya! ')
 
+    #Menyimpan user ke database
     id_user = get_or_create_user(nama)
 
     print()
