@@ -226,3 +226,45 @@ def import_data():
     connection.close()
 
     print(f'Data dari "{nama_file}" berhasil di-import ke database!')
+    
+    def get_dashboard():
+    connection = connect_db()
+    cursor = connection.cursor()
+
+    # Total Schedule
+    cursor.execute("SELECT COUNT(*) FROM schedules")
+    total = cursor.fetchone()[0]
+
+    # Completed
+    cursor.execute("SELECT COUNT(*) FROM schedules WHERE status = 1")
+    completed = cursor.fetchone()[0]
+
+    # Pending
+    cursor.execute("SELECT COUNT(*) FROM schedules WHERE status = 0")
+    pending = cursor.fetchone()[0]
+
+    # Completion Rate
+    if total == 0:
+        rate = 0
+    else:
+        rate = round((completed / total) * 100, 2)
+
+    # Activity Today
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    cursor.execute(
+        "SELECT COUNT(*) FROM schedules WHERE tanggal = ?",
+        (today,)
+    )
+
+    activity_today = cursor.fetchone()[0]
+
+    connection.close()
+
+    return {
+        "total": total,
+        "completed": completed,
+        "pending": pending,
+        "rate": rate,
+        "today": activity_today
+    }
