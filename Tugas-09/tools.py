@@ -7,11 +7,11 @@ from manager.schedule import (
 )
 
 from manager.reminder import show_reminder
-from manager.storage import export_data, import_data, get_dashboard 
+from manager.storage import export_data, import_data, get_dashboard_mapreduce
 
 def show_statistik():
 
-    dashboard = get_dashboard()
+    dashboard = get_dashboard_mapreduce()
 
     print()
     print("================================")
