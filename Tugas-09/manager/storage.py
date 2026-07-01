@@ -1,6 +1,7 @@
 import sqlite3
 import json
 from datetime import datetime
+from functools import reduce
 
 DB_NAME = 'cheki_cheki.db'
 
@@ -228,6 +229,64 @@ def import_data():
     print(f'Data dari "{nama_file}" berhasil di-import ke database!')
 
 def get_dashboard():
+    from functools import reduce
+
+def get_dashboard_mapreduce():
+    connection = connect_db()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT tanggal, status
+        FROM schedules
+    """)
+
+    schedules = cursor.fetchall()
+
+    connection.close()
+    # Map: mengambil nilai status dari setiap schedule
+    status_list = list(
+        map(lambda schedule: schedule[1], schedules)
+    )
+    # Filter: ambil status Completed (1)
+    completed_list = list(
+        filter(lambda status: status == 1, status_list)
+    )
+
+    # Filter: ambil status Pending (0)
+    pending_list = list(
+        filter(lambda status: status == 0, status_list)
+    )
+    # Reduce: menghitung total Completed
+    completed = reduce(lambda x, y: x + y, completed_list, 0)
+
+    # Reduce: menghitung jumlah Pending
+    pending = reduce(lambda x, y: x + 1, pending_list, 0)
+
+    # Total Schedule
+    total = len(status_list)
+
+    # Completion Rate
+    if total == 0:
+        rate = 0
+    else:
+        rate = round((completed / total) * 100, 2)
+        # Filter: aktivitas hari ini
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    today_list = list(
+        filter(lambda schedule: schedule[0] == today, schedules)
+    )
+
+    activity_today = len(today_list)
+
+    return {
+        "total": total,
+        "completed": completed,
+        "pending": pending,
+        "rate": rate,
+        "today": activity_today
+    }
+
     connection = connect_db()
     cursor = connection.cursor()
 
