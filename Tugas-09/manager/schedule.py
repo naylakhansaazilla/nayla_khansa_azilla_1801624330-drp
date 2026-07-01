@@ -4,36 +4,91 @@ from manager.storage import connect_db
 from manager.output import print_schedules
 
 
+_NAMA_BULAN = {
+    'januari': 1, 'februari': 2, 'maret': 3, 'april': 4,
+    'mei': 5, 'juni': 6, 'juli': 7, 'agustus': 8,
+    'september': 9, 'oktober': 10, 'november': 11, 'desember': 12,
+}
+
+
+def _parse_tanggal(tanggal):
+    """
+    Mencoba mem-parsing tanggal dari berbagai format yang mungkin diinput user:
+    - "2 Juli 2026" (nama bulan Indonesia)
+    - "02-07-2026", "02/07/2026", "2026-07-02", dsb.
+    Mengembalikan objek date, atau None kalau tidak berhasil dikenali.
+    """
+    teks = tanggal.strip().lower()
+
+    # Coba format nama bulan Indonesia: "2 juli 2026"
+    bagian = teks.split()
+    if len(bagian) == 3 and bagian[1] in _NAMA_BULAN:
+        try:
+            hari = int(bagian[0])
+            bulan = _NAMA_BULAN[bagian[1]]
+            tahun = int(bagian[2])
+            return datetime(tahun, bulan, hari).date()
+        except ValueError:
+            pass
+
+    # Coba beberapa format numerik umum
+    for fmt in ('%d-%m-%Y', '%d/%m/%Y', '%Y-%m-%d', '%Y/%m/%d'):
+        try:
+            return datetime.strptime(tanggal.strip(), fmt).date()
+        except ValueError:
+            continue
+
+    return None
+
+
+def _parse_waktu(waktu):
+    """Mencoba mem-parsing jam dari format 'HH:MM', 'HH.MM', atau 'HH:MM:SS'."""
+    for fmt in ('%H:%M', '%H.%M', '%H:%M:%S'):
+        try:
+            return datetime.strptime(waktu.strip(), fmt).time()
+        except ValueError:
+            continue
+    return None
+
+
+def _parse_tanggal_waktu(tanggal, waktu):
+    """
+    Menggabungkan tanggal + waktu jadi satu objek datetime,
+    supaya perbandingan dengan waktu sekarang akurat (bukan cuma bandingin jam,
+    karena jadwalnya bisa untuk hari lain / masa depan).
+    Mengembalikan None kalau salah satu (tanggal/waktu) gagal dikenali.
+    """
+    tgl = _parse_tanggal(tanggal)
+    jam = _parse_waktu(waktu)
+
+    if tgl is None or jam is None:
+        return None
+
+    return datetime.combine(tgl, jam)
+
+
 def add_schedule(id_user):
     tanggal = input('Masukkan tanggal: ')
     waktu = input('Masukkan waktu: ')
     kegiatan = input('Masukkan kegiatan: ')
     deskripsi = input('Masukkan deskripsi (boleh dikosongkan): ')
 
-    # TAMBAHAN: pengecekan jam jadwal, berlaku untuk KEGIATAN APAPUN
-    # (tidak dikhususkan untuk "bekerja" saja) dan JAM BERAPAPUN sesuai input user
-    jam_jadwal = None
-    for fmt in ('%H:%M', '%H.%M', '%H:%M:%S'):
-        try:
-            jam_jadwal = datetime.strptime(waktu.strip(), fmt)
-            break
-        except ValueError:
-            continue
+    # TAMBAHAN: pengecekan jadwal, berlaku untuk KEGIATAN APAPUN,
+    # TANGGAL APAPUN, dan JAM BERAPAPUN sesuai input user.
+    # Tanggal & jam digabung dulu supaya perbandingannya akurat
+    waktu_jadwal = _parse_tanggal_waktu(tanggal, waktu)
 
-    if jam_jadwal is None:
-        print(f'(Format waktu "{waktu}" tidak dikenali, pengecekan jam dilewati)')
+    if waktu_jadwal is None:
+        print(f'(Format tanggal/waktu "{tanggal} {waktu}" tidak dikenali, pengecekan jadwal dilewati)')
     else:
         waktu_sekarang = datetime.now()
-        print(f'jadwal "{kegiatan}" di jam {jam_jadwal.strftime("%H.%M")}')
-        print(f'sekarang sudah menunjukkan pukul {waktu_sekarang.strftime("%H:%M:%S")}')
+        print(f'jadwal "{kegiatan}" pada {waktu_jadwal.strftime("%d-%m-%Y")} jam {waktu_jadwal.strftime("%H.%M")}')
+        print(f'sekarang sudah menunjukkan {waktu_sekarang.strftime("%d-%m-%Y %H:%M:%S")}')
 
-        sekarang_menit = waktu_sekarang.hour * 60 + waktu_sekarang.minute
-        target_menit = jam_jadwal.hour * 60 + jam_jadwal.minute
-
-        if sekarang_menit < target_menit:
+        if waktu_sekarang < waktu_jadwal:
             print("wah masih ada waktu nih, nanti kalo sudah waktunya aku ingatkan ya!")
-        elif sekarang_menit == target_menit:
-            print(f'yah, sayang sekali waktu sudah menunjukkan jam {jam_jadwal.strftime("%H.%M")}:(')
+        elif waktu_sekarang.replace(second=0, microsecond=0) == waktu_jadwal.replace(second=0, microsecond=0):
+            print(f'yah, sayang sekali waktu sudah menunjukkan jam {waktu_jadwal.strftime("%H.%M")}:(')
         else:
             print("yah, waktunya sudah lewat, silahkan isi waktu yang masih berjalan ya!")
 
