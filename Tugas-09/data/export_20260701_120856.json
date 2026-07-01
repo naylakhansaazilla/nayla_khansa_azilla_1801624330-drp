@@ -1,0 +1,77 @@
+{
+    "users": [
+        {
+            "id_user": 1,
+            "user_name": "Tasya"
+        }
+    ],
+    "schedules": [
+        {
+            "id": 1,
+            "id_user": 1,
+            "tanggal": "2 Juli 2026",
+            "waktu": "09.00",
+            "kegiatan": "masak",
+            "deskripsi": "-",
+            "status": 0
+        },
+        {
+            "id": 2,
+            "id_user": 1,
+            "tanggal": "3 Juli 2026",
+            "waktu": "09.00",
+            "kegiatan": "makan",
+            "deskripsi": "-",
+            "status": 0
+        },
+        {
+            "id": 3,
+            "id_user": 1,
+            "tanggal": "4 Juli 2026",
+            "waktu": "11.00",
+            "kegiatan": "berenang",
+            "deskripsi": "-",
+            "status": 0
+        }
+    ],
+    "checklist": [
+        {
+            "id_checklist": 1,
+            "id_schedule": 1,
+            "check_status": 0,
+            "check_date": null
+        },
+        {
+            "id_checklist": 2,
+            "id_schedule": 2,
+            "check_status": 0,
+            "check_date": null
+        },
+        {
+            "id_checklist": 3,
+            "id_schedule": 3,
+            "check_status": 0,
+            "check_date": null
+        }
+    ],
+    "reminders": [
+        {
+            "id_reminder": 1,
+            "id_schedule": 1,
+            "reminder_time": "08.45",
+            "reminder_status": "pending"
+        },
+        {
+            "id_reminder": 2,
+            "id_schedule": 2,
+            "reminder_time": "08.50",
+            "reminder_status": "pending"
+        },
+        {
+            "id_reminder": 3,
+            "id_schedule": 3,
+            "reminder_time": "10.30",
+            "reminder_status": "pending"
+        }
+    ]
+}
