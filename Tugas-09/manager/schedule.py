@@ -31,11 +31,11 @@ def add_schedule(id_user):
         target_menit = jam_jadwal.hour * 60 + jam_jadwal.minute
 
         if sekarang_menit < target_menit:
-            print("wah, masih terdapat waktu untuk bersiap-siap!")
+            print("wah masih ada waktu nih, nanti kalo sudah waktunya aku ingatkan ya!")
         elif sekarang_menit == target_menit:
             print(f'yah, sayang sekali waktu sudah menunjukkan jam {jam_jadwal.strftime("%H.%M")}:(')
         else:
-            print("aduh, sayang sekali kamu terlambat, lain kali kamu harus bangun lebih awal ya!")
+            print("yah, waktunya sudah lewat, silahkan isi waktu yang masih berjalan ya!")
 
     connection = connect_db()
     cursor = connection.cursor()
