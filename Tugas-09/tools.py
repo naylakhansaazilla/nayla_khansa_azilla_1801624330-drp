@@ -23,7 +23,8 @@ def display_menu():
     print('6. Status Jadwal')
     print('7. Export Data')
     print('8. Import Data')
-    print('9. Keluar')
+    print('9. Statistik Jadwal')
+    print('10. Keluar')
     print('================================')
 
 
@@ -71,13 +72,20 @@ def select_menu(menu, id_user):
         print('Anda mengakses menu "Import Data"')
         import_data()
 
-    elif menu == '9':
-        # Logic untuk keluar program
+      elif menu == '9':
+        # Logic untuk melakukan statistik jadwal yang ada
+        print('Anda mengakses menu "Statistik Jadwal"')
+        show_statistik()
+ 
+    elif menu == '10':
+         # Logic untuk keluar program
         print('Terima kasih telah menggunakan Cheki-Cheki ^^')
         return True
-
+ 
     else:
         # Logic jika input tidak sesuai menu
         print('Menu tidak tersedia')
-
+ 
     return False
+
+  
