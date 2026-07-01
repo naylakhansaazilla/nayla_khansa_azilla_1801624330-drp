@@ -10,6 +10,33 @@ def add_schedule(id_user):
     kegiatan = input('Masukkan kegiatan: ')
     deskripsi = input('Masukkan deskripsi (boleh dikosongkan): ')
 
+    # TAMBAHAN: pengecekan jam jadwal, berlaku untuk KEGIATAN APAPUN
+    # (tidak dikhususkan untuk "bekerja" saja) dan JAM BERAPAPUN sesuai input user
+    jam_jadwal = None
+    for fmt in ('%H:%M', '%H.%M', '%H:%M:%S'):
+        try:
+            jam_jadwal = datetime.strptime(waktu.strip(), fmt)
+            break
+        except ValueError:
+            continue
+
+    if jam_jadwal is None:
+        print(f'(Format waktu "{waktu}" tidak dikenali, pengecekan jam dilewati)')
+    else:
+        waktu_sekarang = datetime.now()
+        print(f'jadwal "{kegiatan}" di jam {jam_jadwal.strftime("%H.%M")}')
+        print(f'sekarang sudah menunjukkan pukul {waktu_sekarang.strftime("%H:%M:%S")}')
+
+        sekarang_menit = waktu_sekarang.hour * 60 + waktu_sekarang.minute
+        target_menit = jam_jadwal.hour * 60 + jam_jadwal.minute
+
+        if sekarang_menit < target_menit:
+            print("wah, masih terdapat waktu untuk bersiap-siap!")
+        elif sekarang_menit == target_menit:
+            print(f'yah, sayang sekali waktu sudah menunjukkan jam {jam_jadwal.strftime("%H.%M")}:(')
+        else:
+            print("aduh, sayang sekali kamu terlambat, lain kali kamu harus bangun lebih awal ya!")
+
     connection = connect_db()
     cursor = connection.cursor()
 
@@ -158,4 +185,4 @@ def delete_schedule():
     connection.commit()
     connection.close()
 
-    print('Jadwal berhasil dihapus!') 
+    print('Jadwal berhasil dihapus!')
