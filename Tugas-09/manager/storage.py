@@ -226,8 +226,8 @@ def import_data():
     connection.close()
 
     print(f'Data dari "{nama_file}" berhasil di-import ke database!')
-    
-    def get_dashboard():
+
+def get_dashboard():
     connection = connect_db()
     cursor = connection.cursor()
 
