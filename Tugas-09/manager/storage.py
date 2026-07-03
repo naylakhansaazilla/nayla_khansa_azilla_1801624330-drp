@@ -107,7 +107,7 @@ def export_data():
 
     connection.close()
 
-    # Ubah hasil query (tuple) jadi list of dictionary, supaya bisa ditulis ke JSON
+    # Ubah hasil query jadi list of dictionary, supaya bisa ditulis ke JSON
     users_list = []
     for row in users_rows:
         users_list.append({
@@ -228,41 +228,32 @@ def import_data():
 
     print(f'Data dari "{nama_file}" berhasil di-import ke database!')
 
-def get_dashboard():
-    from functools import reduce
 
 def get_dashboard_mapreduce():
+    """
+    TUGAS 13 - KOMPUTASI: Menghitung statistik jadwal menggunakan
+    teknik Map, Filter, dan Reduce dari data di tabel schedules.
+    """
     connection = connect_db()
     cursor = connection.cursor()
 
-    cursor.execute("""
-        SELECT tanggal, status
-        FROM schedules
-    """)
-
+    cursor.execute('SELECT tanggal, status FROM schedules')
     schedules = cursor.fetchall()
 
     connection.close()
-    # Map: mengambil nilai status dari setiap schedule
-    status_list = list(
-        map(lambda schedule: schedule[1], schedules)
-    )
-    # Filter: ambil status Completed (1)
-    completed_list = list(
-        filter(lambda status: status == 1, status_list)
-    )
 
-    # Filter: ambil status Pending (0)
-    pending_list = list(
-        filter(lambda status: status == 0, status_list)
-    )
-    # Reduce: menghitung total Completed
+    # Map: ambil nilai status dari setiap baris jadwal
+    status_list = list(map(lambda schedule: schedule[1], schedules))
+
+    # Filter: pisahkan yang selesai (status=1) dan belum (status=0)
+    completed_list = list(filter(lambda status: status == 1, status_list))
+    pending_list = list(filter(lambda status: status == 0, status_list))
+
+    # Reduce: hitung total masing-masing
     completed = reduce(lambda x, y: x + y, completed_list, 0)
-
-    # Reduce: menghitung jumlah Pending
     pending = reduce(lambda x, y: x + 1, pending_list, 0)
 
-    # Total Schedule
+    # Total jadwal
     total = len(status_list)
 
     # Completion Rate
@@ -270,60 +261,16 @@ def get_dashboard_mapreduce():
         rate = 0
     else:
         rate = round((completed / total) * 100, 2)
-        # Filter: aktivitas hari ini
-    today = datetime.now().strftime("%Y-%m-%d")
 
-    today_list = list(
-        filter(lambda schedule: schedule[0] == today, schedules)
-    )
-
+    # Activity Today: filter jadwal yang tanggalnya = hari ini
+    today = datetime.now().strftime('%Y-%m-%d')
+    today_list = list(filter(lambda schedule: schedule[0] == today, schedules))
     activity_today = len(today_list)
 
     return {
-        "total": total,
-        "completed": completed,
-        "pending": pending,
-        "rate": rate,
-        "today": activity_today
-    }
-
-    connection = connect_db()
-    cursor = connection.cursor()
-
-    # Total Schedule
-    cursor.execute("SELECT COUNT(*) FROM schedules")
-    total = cursor.fetchone()[0]
-
-    # Completed
-    cursor.execute("SELECT COUNT(*) FROM schedules WHERE status = 1")
-    completed = cursor.fetchone()[0]
-
-    # Pending
-    cursor.execute("SELECT COUNT(*) FROM schedules WHERE status = 0")
-    pending = cursor.fetchone()[0]
-
-    # Completion Rate
-    if total == 0:
-        rate = 0
-    else:
-        rate = round((completed / total) * 100, 2)
-
-    # Activity Today
-    today = datetime.now().strftime("%Y-%m-%d")
-
-    cursor.execute(
-        "SELECT COUNT(*) FROM schedules WHERE tanggal = ?",
-        (today,)
-    )
-
-    activity_today = cursor.fetchone()[0]
-
-    connection.close()
-
-    return {
-        "total": total,
-        "completed": completed,
-        "pending": pending,
-        "rate": rate,
-        "today": activity_today
+        'total': total,
+        'completed': completed,
+        'pending': pending,
+        'rate': rate,
+        'today': activity_today
     }
