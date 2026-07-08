@@ -1,6 +1,7 @@
-import json
 from functools import reduce
 from datetime import datetime
+
+from manager.storage import connect_db
 
 # =========================================================
 # TUGAS 14 - MapReduce sederhana (tanpa PySpark)
@@ -8,13 +9,31 @@ from datetime import datetime
 # tapi datanya dibagi dulu ke minimal 2 "node" sebelum diolah.
 # =========================================================
 
-NAMA_FILE = 'schedules_dummy.json'
 JUMLAH_NODE = 2
 
 
-def baca_data(nama_file):
-    with open(nama_file, 'r') as f:
-        return json.load(f)
+def baca_data():
+    connection = connect_db()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT tanggal, status
+        FROM schedules
+    """)
+
+    rows = cursor.fetchall()
+    connection.close()
+
+    # Ubah hasil query menjadi list of dictionary
+    data = []
+
+    for row in rows:
+        data.append({
+            'tanggal': row[0],
+            'status': row[1]
+        })
+
+    return data
 
 
 def bagi_node(data, jumlah_node=2):
@@ -81,8 +100,8 @@ def gabungkan_hasil(daftar_hasil_node):
 
 
 if __name__ == '__main__':
-    print('Membaca file data dummy...')
-    data = baca_data(NAMA_FILE)
+    print('Membaca data dari database SQLite...')
+    data = baca_data()
     print(f'Total data dibaca: {len(data)}\n')
 
     today = datetime.now().strftime('%Y-%m-%d')
